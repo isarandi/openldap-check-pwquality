@@ -68,6 +68,7 @@ There are other similar projects out there already:
 - [check-password](https://github.com/merces/check-password)
 - [BOFH OpenLDAP PPolicy pwdCheckModules](https://github.com/bindle/bofh-pwdCheckModules)
 - [pqchecker](https://bitbucket.org/ameddeb/pqchecker/)
+- [openldap-ppolicy-cracklib](https://github.com/Elizafox/openldap-ppolicy-cracklib)
 
 However, these are more limited in configuration options. The main point of this project is to harness the full power and configurability of libpwquality, by offloading all the password checking logic to its API.
 
