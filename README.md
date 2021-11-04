@@ -82,4 +82,5 @@ However, these are more limited in configuration options. The main point of this
 - https://ldapwiki.com/wiki/Draft-behera-ldap-password-policy
 - http://tutoriels.meddeb.net/openldap-password-policy-managing-users-accounts/
 - https://kb.brightcomputing.com/knowledge-base/how-do-i-define-a-password-policy-in-ldap/
+- https://ldapwiki.com/wiki/Password%20Strength
 
