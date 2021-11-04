@@ -37,7 +37,7 @@ sudo make install LDAP_SRC=/tmp/openldap-2.4.45+dfsg CONFIG_PATH=/etc/ldap/pwqua
 
 At this point there should be a file `check_pwquality.so` under `/usr/lib/ldap` and you can simply add the attribute `pwdCheckModule: check_pwquality.so` to your LDAP password policy. How exactly this is done will depend on your particular LDAP layout. See [this blog post on Kifarunix](https://kifarunix.com/implement-openldap-password-policies/) for some guidance.
 
-Now, all that remains is to configure pwquality at the chosen config file path (`/etc/ldap/pwquality.conf` by default). See `man pwquality.conf` for details on this. Since OpenLDAP is often run in a way that doesn't let it read files from just anywhere, make sure that your cracklib dictionary is readable to the LDAP server. In particular, it's best to place both the pwquality.conf file and the cracklib dictionary files under `/etc/ldap/` as well.
+Now, all that remains is to configure pwquality at the chosen config file path (`/etc/ldap/pwquality.conf` by default). See [`man pwquality.conf`](http://manpages.ubuntu.com/manpages/bionic/man5/pwquality.conf.5.html) for details on this. Since OpenLDAP is often run in a way that doesn't let it read files from just anywhere, make sure that your cracklib dictionary is readable to the LDAP server. In particular, it's best to place both the pwquality.conf file and the cracklib dictionary files under `/etc/ldap/` as well.
 
 You can set up a beefy cracklib dictionary as follows:
 
@@ -57,8 +57,8 @@ And that's it!
 
 ## General tips to avoid pitfalls with password policies
 
-- If you use `ldapscripts`, make sure to bind with something other than the root bind DN. The root bind DN bypasses all password policy checks, so `ldapadduser` will accept any password.
-- Make sure that the clients don't send pre-hashed passwords to the server when changing the password. Obviously the server needs the plaintext password to check its quality. This means, you better set up TLS as well, to avoid plaintext passwords flying around the network. (E.g. Ubuntu clients should NOT have lines in `/etc/ldap.conf` like `pam_password md5`. Either remove it or set it to `pam_password clear`).
+- If you use [`ldapscripts`](https://github.com/martymac/ldapscripts), make sure to bind with something other than the root bind DN. The root bind DN bypasses all password policy checks, so `ldapadduser` will accept any password.
+- Make sure that the clients don't send pre-hashed passwords to the server when changing the password. Obviously the server needs the plaintext password to check its quality. This means, you better set up TLS as well, to avoid plaintext passwords flying around the network. (E.g. Ubuntu clients should NOT have lines in [`/etc/ldap.conf`](http://manpages.ubuntu.com/manpages/bionic/man5/ldap.conf.5.html) like `pam_password md5`. Either remove it or set it to `pam_password clear`).
 
 ## Similar projects
 
