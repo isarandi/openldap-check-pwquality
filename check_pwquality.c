@@ -22,7 +22,7 @@
 #include <pwquality.h>
 #include <syslog.h>
 
-int check_password(const char *pPasswd, char **ppErrStr __attribute__((unused)), const Entry *pEntry)
+int check_password(const char *pPasswd, char **ppErrStr, const Entry *pEntry)
 {
     // Get pwquality settings
     pwquality_settings_t *pwq;
