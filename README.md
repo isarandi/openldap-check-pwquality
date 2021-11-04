@@ -55,6 +55,11 @@ echo 'dictpath = /etc/ldap/cracklib_dict' | sudo tee -a /etc/ldap/pwquality.conf
 
 And that's it!
 
+## General tips to avoid pitfalls with password policies
+
+- If you use `ldapscripts`, make sure to bind with something other than the root bind DN. The root bind DN bypasses all password policy checks, so `ldapadduser` will accept any password.
+- Make sure that the clients don't send pre-hashed passwords to the server when changing the password. Obviously the server needs the plaintext password to check its quality. This means, you better set up TLS as well, to avoid plaintext passwords flying around the network. (E.g. Ubuntu clients should NOT have lines in `/etc/ldap.conf` like `pam_password md5`. Either remove it or set it to `pam_password clear`).
+
 ## Similar projects
 
 There are other similar projects out there already:
@@ -64,3 +69,14 @@ There are other similar projects out there already:
 - [BOFH OpenLDAP PPolicy pwdCheckModules](https://github.com/bindle/bofh-pwdCheckModules)
 
 However, these are more limited in configuration options. The main point of this project is to harness the full power and configurability of libpwquality, by offloading all the password checking logic to its API.
+
+## References
+
+- https://www.openldap.org/
+- [man slapo-ppolicy](https://www.openldap.org/software/man.cgi?query=slapo-ppolicy)
+- https://github.com/libpwquality/libpwquality
+- https://github.com/cracklib/cracklib
+- https://ldapwiki.com/wiki/Draft-behera-ldap-password-policy
+- http://tutoriels.meddeb.net/openldap-password-policy-managing-users-accounts/
+- https://kb.brightcomputing.com/knowledge-base/how-do-i-define-a-password-policy-in-ldap/
+
