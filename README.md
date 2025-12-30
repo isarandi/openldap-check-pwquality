@@ -2,42 +2,84 @@
 
 This is a small project to make [libpwquality](https://github.com/libpwquality/libpwquality) work as an OpenLDAP password policy module (`pwdCheckModule`).
 
-The following installation instructions are for Ubuntu 18.04 LTS, but can be trivially adjusted to different distros.
+The following installation instructions are for Ubuntu 24.04 LTS, but can be adjusted to other distros.
 
 Install some dependencies (assuming that OpenLDAP/slapd is already installed):
 
 ```bash
-sudo apt install libpwquality-dev cracklib-runtime libdb-dev 
+sudo apt install libpwquality-dev cracklib-runtime libdb-dev
 ```
 
-We need the OpenLDAP sources to compile our module. You can download the sources from the OpenLDAP website or use your package manager. On Ubuntu, enable the source packages in `/etc/apt/sources.list`, with e.g.
+We need the OpenLDAP sources to compile our module. You can download the sources from the [OpenLDAP website](https://www.openldap.org/software/download/) or use your package manager.
+
+### Option A: Use Ubuntu source package
+
+Enable source packages (Ubuntu 24.04 uses deb822 format):
 
 ```bash
-echo 'deb-src http://de.archive.ubuntu.com/ubuntu/ bionic main restricted' | sudo tee -a /etc/apt/sources.list
+sudo sed -i 's/^Types: deb$/Types: deb deb-src/' /etc/apt/sources.list.d/ubuntu.sources
+sudo apt update
 ```
 
-Get the source package and `make` it. This requires the libdbd-dev (BerkeleyDB) package as well.
+Get the source package and build it:
 
 ```bash
 cd /tmp
 apt-get source slapd
-cd openldap-2.4.45+dfsg/
+cd openldap-2.6.*/
 ./configure
 make depend
 ```
 
-Now clone this repo and `make` the library as follows:
+### Option B: Download from OpenLDAP directly
+
+```bash
+cd /tmp
+wget https://www.openldap.org/software/download/OpenLDAP/openldap-release/openldap-2.6.10.tgz
+tar xzf openldap-2.6.10.tgz
+cd openldap-2.6.10
+./configure
+make depend
+```
+
+### Build the module
+
+Clone this repo and `make` the library (adjust `LDAP_SRC` to match your OpenLDAP source directory):
 
 ```bash
 cd /tmp
 git clone https://github.com/isarandi/openldap-check-pwquality.git
 cd openldap-check-pwquality
-sudo make install LDAP_SRC=/tmp/openldap-2.4.45+dfsg CONFIG_PATH=/etc/ldap/pwquality.conf LDAP_LIBDIR=/usr/lib/ldap
+sudo make install LDAP_SRC=/tmp/openldap-2.6.10 CONFIG_PATH=/etc/ldap/pwquality.conf LDAP_LIBDIR=/usr/lib/ldap
 ```
 
-At this point there should be a file `check_pwquality.so` under `/usr/lib/ldap` and you can simply add the attribute `pwdCheckModule: check_pwquality.so` to your LDAP password policy. How exactly this is done will depend on your particular LDAP layout. See [this blog post on Kifarunix](https://kifarunix.com/implement-openldap-password-policies/) for some guidance.
+At this point there should be a file `check_pwquality.so` under `/usr/lib/ldap`.
 
-Now, all that remains is to configure pwquality at the chosen config file path (`/etc/ldap/pwquality.conf` by default). See [`man pwquality.conf`](http://manpages.ubuntu.com/manpages/bionic/man5/pwquality.conf.5.html) for details on this. Since OpenLDAP is often run in a way that doesn't let it read files from just anywhere, make sure that your cracklib dictionary is readable to the LDAP server. In particular, it's best to place both the pwquality.conf file and the cracklib dictionary files under `/etc/ldap/` as well.
+### Configure the password policy
+
+**OpenLDAP 2.5+ (including Ubuntu 22.04+):** The module must be configured at the ppolicy overlay level, not in the password policy entry. Add the module path to your ppolicy overlay configuration:
+
+Using cn=config (LDIF):
+```ldif
+dn: olcOverlay=ppolicy,olcDatabase={1}mdb,cn=config
+changetype: modify
+add: olcPPolicyCheckModule
+olcPPolicyCheckModule: /usr/lib/ldap/check_pwquality.so
+```
+
+Then enable it in your password policy entry:
+```ldif
+dn: cn=default,ou=policies,dc=example,dc=com
+changetype: modify
+add: pwdUseCheckModule
+pwdUseCheckModule: TRUE
+```
+
+**OpenLDAP 2.4 (legacy):** Add the attribute `pwdCheckModule: check_pwquality.so` directly to your password policy entry.
+
+See [this blog post on Kifarunix](https://kifarunix.com/install-openldap-server-on-ubuntu-24-04/) for general guidance on OpenLDAP password policies.
+
+Now, all that remains is to configure pwquality at the chosen config file path (`/etc/ldap/pwquality.conf` by default). See [`man pwquality.conf`](https://manpages.ubuntu.com/manpages/noble/man5/pwquality.conf.5.html) for details on this. Since OpenLDAP is often run in a way that doesn't let it read files from just anywhere, make sure that your cracklib dictionary is readable to the LDAP server. In particular, it's best to place both the pwquality.conf file and the cracklib dictionary files under `/etc/ldap/` as well.
 
 You can set up a beefy cracklib dictionary as follows:
 
@@ -58,7 +100,7 @@ And that's it!
 ## General tips to avoid pitfalls with password policies
 
 - If you use [`ldapscripts`](https://github.com/martymac/ldapscripts), make sure to bind with something other than the root bind DN. The root bind DN bypasses all password policy checks, so `ldapadduser` will accept any password.
-- Make sure that the clients don't send pre-hashed passwords to the server when changing the password. Obviously the server needs the plaintext password to check its quality. This means, you better set up TLS as well, to avoid plaintext passwords flying around the network. (E.g. Ubuntu clients should NOT have lines in [`/etc/ldap.conf`](http://manpages.ubuntu.com/manpages/bionic/man5/ldap.conf.5.html) like `pam_password md5`. Either remove it or set it to `pam_password clear`).
+- Make sure that the clients don't send pre-hashed passwords to the server when changing the password. Obviously the server needs the plaintext password to check its quality. This means, you better set up TLS as well, to avoid plaintext passwords flying around the network. (E.g. Ubuntu clients should NOT have lines in [`/etc/ldap.conf`](https://manpages.ubuntu.com/manpages/noble/man5/ldap.conf.5.html) like `pam_password md5`. Either remove it or set it to `pam_password clear`).
 
 ## Similar projects
 
