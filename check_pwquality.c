@@ -49,7 +49,7 @@ int check_password(const char *pPasswd, char **ppErrStr, const Entry *pEntry)
     char *comma_ptr = strchr(equals_ptr + 1, ',');
     if (!comma_ptr)
         return EXIT_FAILURE;
-    size_t namelen = comma_ptr - equals_ptr;
+    size_t namelen = comma_ptr - equals_ptr - 1;
     char *username = malloc(namelen + 1);
     strncpy(username, equals_ptr + 1, namelen);
     username[namelen] = '\0';
