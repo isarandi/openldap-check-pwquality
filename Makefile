@@ -1,7 +1,7 @@
 CC=gcc
 
 # Where to find the OpenLDAP sources
-LDAP_SRC=/tmp/openldap-2.4.45+dfsg
+LDAP_SRC=/tmp/openldap-2.6.10
 LDAP_LIBDIR=/usr/lib/ldap
 CONFIG_PATH=/etc/ldap/pwquality.conf
 CC_FLAGS=-g -O2 -Wall -fpic
